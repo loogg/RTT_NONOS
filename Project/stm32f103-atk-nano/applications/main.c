@@ -2,7 +2,6 @@
 #include <rtdevice.h>
 #include <board.h>
 #include "fal.h"
-#include "easyflash.h"
 #include "at.h"
 
 static rt_thread_t test_tid =RT_NULL;
@@ -21,7 +20,6 @@ static void test(void *param)
 int main(void)
 {
     fal_init();
-    easyflash_init();
     at_client_init("uart2", 512);
     resp = at_create_resp(1024, 0, 5000);
     test_tid = rt_thread_create("test", test, RT_NULL, 1000);
