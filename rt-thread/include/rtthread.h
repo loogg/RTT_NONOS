@@ -76,34 +76,7 @@ rt_tick_t rt_tick_get(void);
 void rt_tick_set(rt_tick_t tick);
 void rt_tick_increase(void);
 rt_tick_t  rt_tick_from_millisecond(rt_int32_t ms);
-
-void rt_system_timer_init(void);
-void rt_system_timer_thread_init(void);
-
-void rt_timer_init(rt_timer_t  timer,
-                   const char *name,
-                   void (*timeout)(void *parameter),
-                   void       *parameter,
-                   rt_tick_t   time,
-                   rt_uint8_t  flag);
-rt_err_t rt_timer_detach(rt_timer_t timer);
-rt_timer_t rt_timer_create(const char *name,
-                           void (*timeout)(void *parameter),
-                           void       *parameter,
-                           rt_tick_t   time,
-                           rt_uint8_t  flag);
-rt_err_t rt_timer_delete(rt_timer_t timer);
-rt_err_t rt_timer_start(rt_timer_t timer);
-rt_err_t rt_timer_stop(rt_timer_t timer);
-rt_err_t rt_timer_control(rt_timer_t timer, int cmd, void *arg);
-
-rt_tick_t rt_timer_next_timeout_tick(void);
-void rt_timer_check(void);
-
-#ifdef RT_USING_HOOK
-void rt_timer_enter_sethook(void (*hook)(struct rt_timer *timer));
-void rt_timer_exit_sethook(void (*hook)(struct rt_timer *timer));
-#endif
+void rt_tick_delay(rt_tick_t tick);
 
 /**@}*/
 
@@ -120,18 +93,17 @@ rt_err_t rt_thread_init(struct rt_thread *thread,
                         const char       *name,
                         void (*entry)(void *parameter),
                         void             *parameter,
-                        rt_uint32_t       tick);
+                        rt_int32_t       tick);
 rt_err_t rt_thread_detach(rt_thread_t thread);
 rt_thread_t rt_thread_create(const char *name,
                              void (*entry)(void *parameter),
                              void       *parameter,
-                             rt_uint32_t tick);
+                             rt_int32_t tick);
 rt_thread_t rt_thread_self(void);
 rt_thread_t rt_thread_find(char *name);
 rt_err_t rt_thread_startup(rt_thread_t thread);
 rt_err_t rt_thread_delete(rt_thread_t thread);
 
-rt_err_t rt_thread_yield(void);
 rt_err_t rt_thread_delay(rt_tick_t tick);
 rt_err_t rt_thread_mdelay(rt_int32_t ms);
 rt_err_t rt_thread_control(rt_thread_t thread, int cmd, void *arg);
@@ -139,11 +111,6 @@ rt_err_t rt_thread_suspend(rt_thread_t thread);
 rt_err_t rt_thread_resume(rt_thread_t thread);
 void rt_thread_timeout(void *parameter);
 
-#ifdef RT_USING_SIGNALS
-void rt_thread_alloc_sig(rt_thread_t tid);
-void rt_thread_free_sig(rt_thread_t tid);
-int  rt_thread_kill(rt_thread_t tid, int sig);
-#endif
 
 #ifdef RT_USING_HOOK
 void rt_thread_suspend_sethook(void (*hook)(rt_thread_t thread));
@@ -166,15 +133,11 @@ rt_thread_t rt_thread_idle_gethandler(void);
  * schedule service
  */
 void rt_system_scheduler_init(void);
-void rt_system_scheduler_start(void);
 
 void rt_schedule(void);
 void rt_schedule_insert_thread(struct rt_thread *thread);
 void rt_schedule_remove_thread(struct rt_thread *thread);
 
-void rt_enter_critical(void);
-void rt_exit_critical(void);
-rt_uint16_t rt_critical_level(void);
 
 #ifdef RT_USING_HOOK
 void rt_scheduler_sethook(void (*hook)(rt_thread_t from, rt_thread_t to));
@@ -186,19 +149,7 @@ void rt_scheduler_ipi_handler(int vector, void *param);
 
 /**@}*/
 
-/**
- * @addtogroup Signals
- * @{
- */
-#ifdef RT_USING_SIGNALS
-void rt_signal_mask(int signo);
-void rt_signal_unmask(int signo);
-rt_sighandler_t rt_signal_install(int signo, rt_sighandler_t handler);
-int rt_signal_wait(const rt_sigset_t *set, rt_siginfo_t *si, rt_int32_t timeout);
 
-int rt_system_signal_init(void);
-#endif
-/*@}*/
 
 /**
  * @addtogroup MM
@@ -279,110 +230,6 @@ void rt_memheap_free(void *ptr);
 
 /**@}*/
 
-/**
- * @addtogroup IPC
- */
-
-/**@{*/
-
-#ifdef RT_USING_SEMAPHORE
-/*
- * semaphore interface
- */
-rt_err_t rt_sem_init(rt_sem_t    sem,
-                     const char *name,
-                     rt_uint32_t value,
-                     rt_uint8_t  flag);
-rt_err_t rt_sem_detach(rt_sem_t sem);
-rt_sem_t rt_sem_create(const char *name, rt_uint32_t value, rt_uint8_t flag);
-rt_err_t rt_sem_delete(rt_sem_t sem);
-
-rt_err_t rt_sem_take(rt_sem_t sem, rt_int32_t time);
-rt_err_t rt_sem_trytake(rt_sem_t sem);
-rt_err_t rt_sem_release(rt_sem_t sem);
-rt_err_t rt_sem_control(rt_sem_t sem, int cmd, void *arg);
-#endif
-
-#ifdef RT_USING_MUTEX
-/*
- * mutex interface
- */
-rt_err_t rt_mutex_init(rt_mutex_t mutex, const char *name, rt_uint8_t flag);
-rt_err_t rt_mutex_detach(rt_mutex_t mutex);
-rt_mutex_t rt_mutex_create(const char *name, rt_uint8_t flag);
-rt_err_t rt_mutex_delete(rt_mutex_t mutex);
-
-rt_err_t rt_mutex_take(rt_mutex_t mutex, rt_int32_t time);
-rt_err_t rt_mutex_release(rt_mutex_t mutex);
-rt_err_t rt_mutex_control(rt_mutex_t mutex, int cmd, void *arg);
-#endif
-
-#ifdef RT_USING_EVENT
-/*
- * event interface
- */
-rt_err_t rt_event_init(rt_event_t event, const char *name, rt_uint8_t flag);
-rt_err_t rt_event_detach(rt_event_t event);
-rt_event_t rt_event_create(const char *name, rt_uint8_t flag);
-rt_err_t rt_event_delete(rt_event_t event);
-
-rt_err_t rt_event_send(rt_event_t event, rt_uint32_t set);
-rt_err_t rt_event_recv(rt_event_t   event,
-                       rt_uint32_t  set,
-                       rt_uint8_t   opt,
-                       rt_int32_t   timeout,
-                       rt_uint32_t *recved);
-rt_err_t rt_event_control(rt_event_t event, int cmd, void *arg);
-#endif
-
-#ifdef RT_USING_MAILBOX
-/*
- * mailbox interface
- */
-rt_err_t rt_mb_init(rt_mailbox_t mb,
-                    const char  *name,
-                    void        *msgpool,
-                    rt_size_t    size,
-                    rt_uint8_t   flag);
-rt_err_t rt_mb_detach(rt_mailbox_t mb);
-rt_mailbox_t rt_mb_create(const char *name, rt_size_t size, rt_uint8_t flag);
-rt_err_t rt_mb_delete(rt_mailbox_t mb);
-
-rt_err_t rt_mb_send(rt_mailbox_t mb, rt_ubase_t value);
-rt_err_t rt_mb_send_wait(rt_mailbox_t mb,
-                         rt_ubase_t  value,
-                         rt_int32_t   timeout);
-rt_err_t rt_mb_recv(rt_mailbox_t mb, rt_ubase_t *value, rt_int32_t timeout);
-rt_err_t rt_mb_control(rt_mailbox_t mb, int cmd, void *arg);
-#endif
-
-#ifdef RT_USING_MESSAGEQUEUE
-/*
- * message queue interface
- */
-rt_err_t rt_mq_init(rt_mq_t     mq,
-                    const char *name,
-                    void       *msgpool,
-                    rt_size_t   msg_size,
-                    rt_size_t   pool_size,
-                    rt_uint8_t  flag);
-rt_err_t rt_mq_detach(rt_mq_t mq);
-rt_mq_t rt_mq_create(const char *name,
-                     rt_size_t   msg_size,
-                     rt_size_t   max_msgs,
-                     rt_uint8_t  flag);
-rt_err_t rt_mq_delete(rt_mq_t mq);
-
-rt_err_t rt_mq_send(rt_mq_t mq, void *buffer, rt_size_t size);
-rt_err_t rt_mq_urgent(rt_mq_t mq, void *buffer, rt_size_t size);
-rt_err_t rt_mq_recv(rt_mq_t    mq,
-                    void      *buffer,
-                    rt_size_t  size,
-                    rt_int32_t timeout);
-rt_err_t rt_mq_control(rt_mq_t mq, int cmd, void *arg);
-#endif
-
-/**@}*/
 
 #ifdef RT_USING_DEVICE
 /**

@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER, STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\..\rt-thread\include;applications;.;board;board\CubeMX_Config\Inc;board\ports;..\..\drivers\STM32_HAL_Drivers;..\..\drivers\STM32_HAL_Drivers\config;..\..\drivers\STM32_HAL_Drivers\drv_flash;packages\EasyFlash-latest\inc;packages\fal-latest\inc;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\libcpu\arm\cortex-m3;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\spi;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\spi\sfud\inc;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\finsh;..\..\rt-thread\components\net\at\include;..\..\libraries\STM32F1xx_HAL\CMSIS\Device\ST\STM32F1xx\Include;..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Inc;..\..\libraries\STM32F1xx_HAL\CMSIS\Include</IncludePath>
+              <IncludePath>.;..\..\rt-thread\include;applications;.;board;board\CubeMX_Config\Inc;board\ports;..\..\drivers\STM32_HAL_Drivers;..\..\drivers\STM32_HAL_Drivers\config;..\..\drivers\STM32_HAL_Drivers\drv_flash;func;.;packages\EasyFlash-latest\inc;packages\fal-latest\inc;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\libcpu\arm\cortex-m3;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\finsh;..\..\rt-thread\components\utilities\ymodem;..\..\libraries\STM32F1xx_HAL\CMSIS\Device\ST\STM32F1xx\Include;..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Inc;..\..\libraries\STM32F1xx_HAL\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -412,11 +412,6 @@
               <FilePath>..\..\rt-thread\src\kservice.c</FilePath>
             </File>
             <File>
-              <FileName>mem.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\src\mem.c</FilePath>
-            </File>
-            <File>
               <FileName>object.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\rt-thread\src\object.c</FilePath>
@@ -440,6 +435,11 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>ymodem_ota.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\ymodem_ota.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -467,11 +467,6 @@
               <FilePath>board\ports\ef_fal_port.c</FilePath>
             </File>
             <File>
-              <FileName>spi_flash_init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\ports\spi_flash_init.c</FilePath>
-            </File>
-            <File>
               <FileName>startup_stm32f103xe.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\..\libraries\STM32F1xx_HAL\CMSIS\Device\ST\STM32F1xx\Source\Templates\arm\startup_stm32f103xe.s</FilePath>
@@ -480,11 +475,6 @@
               <FileName>drv_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\drivers\STM32_HAL_Drivers\drv_usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>drv_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\drivers\STM32_HAL_Drivers\drv_spi.c</FilePath>
             </File>
             <File>
               <FileName>drv_flash_f1.c</FileName>
@@ -630,16 +620,6 @@
               <FileType>1</FileType>
               <FilePath>packages\fal-latest\src\fal_partition.c</FilePath>
             </File>
-            <File>
-              <FileName>fal_rtt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\fal-latest\src\fal_rtt.c</FilePath>
-            </File>
-            <File>
-              <FileName>fal_flash_sfud_port.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\fal-latest\samples\porting\fal_flash_sfud_port.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -659,115 +639,11 @@
         </Group>
         <Group>
           <GroupName>DeviceDrivers</GroupName>
-          <GroupOption>
-            <CommonProperty>
-              <UseCPPCompiler>0</UseCPPCompiler>
-              <RVCTCodeConst>0</RVCTCodeConst>
-              <RVCTZI>0</RVCTZI>
-              <RVCTOtherData>0</RVCTOtherData>
-              <ModuleSelection>0</ModuleSelection>
-              <IncludeInBuild>1</IncludeInBuild>
-              <AlwaysBuild>0</AlwaysBuild>
-              <GenerateAssemblyFile>0</GenerateAssemblyFile>
-              <AssembleAssemblyFile>0</AssembleAssemblyFile>
-              <PublicsOnly>0</PublicsOnly>
-              <StopOnExitCode>3</StopOnExitCode>
-              <CustomArgument></CustomArgument>
-              <IncludeLibraryModules></IncludeLibraryModules>
-              <ComprImg>0</ComprImg>
-            </CommonProperty>
-            <GroupArmAds>
-              <Cads>
-                <interw>2</interw>
-                <Optim>0</Optim>
-                <oTime>2</oTime>
-                <SplitLS>2</SplitLS>
-                <OneElfS>2</OneElfS>
-                <Strict>2</Strict>
-                <EnumInt>2</EnumInt>
-                <PlainCh>2</PlainCh>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <wLevel>0</wLevel>
-                <uThumb>2</uThumb>
-                <uSurpInc>2</uSurpInc>
-                <uC99>2</uC99>
-                <uGnu>2</uGnu>
-                <useXO>2</useXO>
-                <v6Lang>0</v6Lang>
-                <v6LangP>0</v6LangP>
-                <vShortEn>2</vShortEn>
-                <vShortWch>2</vShortWch>
-                <v6Lto>2</v6Lto>
-                <v6WtE>2</v6WtE>
-                <v6Rtti>2</v6Rtti>
-                <VariousControls>
-                  <MiscControls> --c99</MiscControls>
-                  <Define> </Define>
-                  <Undefine> </Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Cads>
-              <Aads>
-                <interw>2</interw>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <thumb>2</thumb>
-                <SplitLS>2</SplitLS>
-                <SwStkChk>2</SwStkChk>
-                <NoWarn>2</NoWarn>
-                <uSurpInc>2</uSurpInc>
-                <useXO>2</useXO>
-                <uClangAs>2</uClangAs>
-                <VariousControls>
-                  <MiscControls></MiscControls>
-                  <Define></Define>
-                  <Undefine></Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Aads>
-            </GroupArmAds>
-          </GroupOption>
           <Files>
             <File>
               <FileName>serial.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\rt-thread\components\drivers\serial\serial.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi_core.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\spi\spi_core.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi_dev.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\spi\spi_dev.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi_flash_sfud.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\spi\spi_flash_sfud.c</FilePath>
-            </File>
-            <File>
-              <FileName>sfud.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\spi\sfud\src\sfud.c</FilePath>
-            </File>
-            <File>
-              <FileName>sfud_sfdp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\spi\sfud\src\sfud_sfdp.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringblk_buf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\src\ringblk_buf.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringbuffer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\drivers\src\ringbuffer.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -807,22 +683,12 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>AT</GroupName>
+          <GroupName>Utilities</GroupName>
           <Files>
             <File>
-              <FileName>at_utils.c</FileName>
+              <FileName>ymodem.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\net\at\src\at_utils.c</FilePath>
-            </File>
-            <File>
-              <FileName>at_cli.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\net\at\src\at_cli.c</FilePath>
-            </File>
-            <File>
-              <FileName>at_client.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread\components\net\at\src\at_client.c</FilePath>
+              <FilePath>..\..\rt-thread\components\utilities\ymodem\ymodem.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -898,21 +764,6 @@
               <FileName>stm32f1xx_hal_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_spi_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_ll_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_spi.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_flash.c</FileName>

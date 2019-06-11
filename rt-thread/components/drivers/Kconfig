@@ -10,13 +10,20 @@ config RT_USING_SERIAL
     default y
 
 if RT_USING_SERIAL
-    config RT_SERIAL_USING_DMA
-        bool "Enable serial DMA mode"
+
+    config RT_SERIAL_USING_INT
+        bool "Enable serial INT mode"
         default y
 
+    config RT_SERIAL_USING_DMA
+        bool "Enable serial DMA mode"
+        select RT_SERIAL_USING_INT
+        default y
+    
     config RT_SERIAL_RB_BUFSZ
         int "Set RX buffer size"
         default 64
+        depends on RT_SERIAL_USING_INT
 
 endif
 

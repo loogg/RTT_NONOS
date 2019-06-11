@@ -63,6 +63,10 @@ enum rym_code {
 #define RYM_END_SESSION_SEND_CAN_NUM  0x07
 #endif
 
+/* SOH/STX + seq + payload + crc */
+#define _RYM_SOH_PKG_SZ (1+2+128+2)
+#define _RYM_STX_PKG_SZ (1+2+1024+2)
+
 enum rym_stage {
     RYM_STAGE_NONE,
     /* set when C is send */
@@ -105,9 +109,11 @@ struct rym_ctx
      * happened. */
     enum rym_stage stage;
     /* user could get the error content through this */
+#ifdef RT_USING_HEAP
     rt_uint8_t *buf;
-
-    struct rt_semaphore sem;
+#else
+    rt_uint8_t buf[_RYM_STX_PKG_SZ];
+#endif
 
     rt_device_t dev;
 };

@@ -238,20 +238,6 @@ long list_thread(void)
 FINSH_FUNCTION_EXPORT(list_thread, list thread);
 MSH_CMD_EXPORT(list_thread, list thread);
 
-static void show_wait_queue(struct rt_list_node *list)
-{
-    struct rt_thread *thread;
-    struct rt_list_node *node;
-
-    for (node = list->next; node != list; node = node->next)
-    {
-        thread = rt_list_entry(node, struct rt_thread, tlist);
-        rt_kprintf("%s", thread->name);
-
-        if (node->next != list)
-            rt_kprintf("/");
-    }
-}
 
 #ifdef RT_USING_SEMAPHORE
 long list_sem(void)

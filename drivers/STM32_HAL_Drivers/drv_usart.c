@@ -154,6 +154,7 @@ static rt_err_t stm32_control(struct rt_serial_device *serial, int cmd, void *ar
 
     switch (cmd)
     {
+#ifdef RT_SERIAL_USING_INT
     /* disable interrupt */
     case RT_DEVICE_CTRL_CLR_INT:
         /* disable rx irq */
@@ -168,7 +169,7 @@ static rt_err_t stm32_control(struct rt_serial_device *serial, int cmd, void *ar
         /* enable interrupt */
         __HAL_UART_ENABLE_IT(&(uart->handle), UART_IT_RXNE);
         break;
-
+#endif
 #ifdef RT_SERIAL_USING_DMA
     case RT_DEVICE_CTRL_CONFIG:
         if (ctrl_arg == RT_DEVICE_FLAG_DMA_RX)
@@ -177,6 +178,8 @@ static rt_err_t stm32_control(struct rt_serial_device *serial, int cmd, void *ar
         }
         break;
 #endif
+    default:
+        break;
     }
     return RT_EOK;
 }
@@ -227,6 +230,7 @@ static const struct rt_uart_ops stm32_uart_ops =
     .getc = stm32_getc,
 };
 
+#ifdef RT_SERIAL_USING_INT
 /**
  * Uart common interrupt process. This need add to uart ISR.
  *
@@ -486,6 +490,7 @@ void LPUART1_DMA_RX_IRQHandler(void)
 }
 #endif /* defined(RT_SERIAL_USING_DMA) && defined(BSP_LPUART1_RX_USING_DMA) */
 #endif /* BSP_USING_LPUART1*/
+#endif /* RT_SERIAL_USING_INT */
 
 #ifdef RT_SERIAL_USING_DMA
 static void stm32_dma_config(struct rt_serial_device *serial)
@@ -610,7 +615,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         rt_hw_serial_isr(serial, RT_SERIAL_EVENT_RX_DMADONE | (recv_len << 8));
     }
 }
-#endif  /* RT_SERIAL_USING_DMA */
+
 
 static void stm32_uart_get_dma_config(void)
 {
@@ -650,14 +655,17 @@ static void stm32_uart_get_dma_config(void)
     uart_config[LPUART1_INDEX].dma_rx = &lpuart1_dma_rx;
 #endif
 }
+#endif  /* RT_SERIAL_USING_DMA */
 
 int rt_hw_usart_init(void)
 {
     rt_size_t obj_num = sizeof(uart_obj) / sizeof(struct stm32_uart);
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;
     rt_err_t result = 0;
-
+    
+#if defined(RT_SERIAL_USING_DMA)
     stm32_uart_get_dma_config();
+#endif
     
     for (int i = 0; i < obj_num; i++)
     {
@@ -676,10 +684,16 @@ int rt_hw_usart_init(void)
         else
 #endif
         {
+#ifdef RT_SERIAL_USING_INT
             /* register UART device */
             result = rt_hw_serial_register(&uart_obj[i].serial,uart_obj[i].config->name,
                                            RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX
                                            ,&uart_obj[i]);
+#else
+            result = rt_hw_serial_register(&uart_obj[i].serial,uart_obj[i].config->name,
+                                           RT_DEVICE_FLAG_RDWR
+                                           ,&uart_obj[i]);
+#endif
         }
         RT_ASSERT(result == RT_EOK);
     }

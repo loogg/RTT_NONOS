@@ -3,15 +3,19 @@ menu "Command shell"
 config RT_USING_FINSH
     bool "finsh shell"
     default y
+    select RT_USING_SERIAL
 
 if RT_USING_FINSH
 
 config FINSH_THREAD_NAME
     string "The finsh thread name"
     default "tshell"
+    
 config FINSH_USING_HISTORY
     bool "Enable command history feature"
     default y
+    depends on RT_SERIAL_USING_INT
+
 if FINSH_USING_HISTORY
 config FINSH_HISTORY_LINES
     int "The command history line number"

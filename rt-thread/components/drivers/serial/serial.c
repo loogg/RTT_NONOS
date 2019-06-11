@@ -251,6 +251,7 @@ rt_inline int _serial_poll_tx(struct rt_serial_device *serial, const rt_uint8_t 
     return size - length;
 }
 
+#ifdef RT_SERIAL_USING_INT
 /*
  * Serial interrupt routines
  */
@@ -301,6 +302,7 @@ rt_inline int _serial_int_rx(struct rt_serial_device *serial, rt_uint8_t *data, 
 
     return size - length;
 }
+#endif /* RT_SERIAL_USING_INT */
 
 
 #if defined(RT_USING_POSIX) || defined(RT_SERIAL_USING_DMA)
@@ -523,7 +525,7 @@ static rt_err_t rt_serial_open(struct rt_device *dev, rt_uint16_t oflag)
 
     /* get open flags */
     dev->open_flag = oflag & 0xff;
-
+#ifdef RT_SERIAL_USING_INT
     /* initialize the Rx/Tx structure according to open flag */
     if (serial->serial_rx == RT_NULL)
     { 
@@ -588,33 +590,7 @@ static rt_err_t rt_serial_open(struct rt_device *dev, rt_uint16_t oflag)
             dev->open_flag |= RT_DEVICE_FLAG_DMA_RX;
 #endif /* RT_SERIAL_USING_DMA */  
     }
-
-    if (serial->serial_tx == RT_NULL)
-    {
-        if (oflag & RT_DEVICE_FLAG_INT_TX)
-        {
-            
-        }
-#ifdef RT_SERIAL_USING_DMA
-        else if (oflag & RT_DEVICE_FLAG_DMA_TX)
-        {
-            
-        }
-#endif /* RT_SERIAL_USING_DMA */
-        else
-        {
-            serial->serial_tx = RT_NULL;
-        }
-    }
-    else
-    {
-        if (oflag & RT_DEVICE_FLAG_INT_TX)
-            dev->open_flag |= RT_DEVICE_FLAG_INT_TX;
-#ifdef RT_SERIAL_USING_DMA
-        else if (oflag & RT_DEVICE_FLAG_DMA_TX)
-            dev->open_flag |= RT_DEVICE_FLAG_DMA_TX;
-#endif /* RT_SERIAL_USING_DMA */    
-    }
+#endif /* RT_SERIAL_USING_INT */   
 
     /* set stream flag */
     dev->open_flag |= stream_flag;
@@ -632,6 +608,7 @@ static rt_err_t rt_serial_close(struct rt_device *dev)
     /* this device has more reference count */
     if (dev->ref_count > 1) return RT_EOK;
 
+#ifdef RT_SERIAL_USING_INT
     if (dev->open_flag & RT_DEVICE_FLAG_INT_RX)
     {
         struct rt_serial_rx_fifo* rx_fifo;
@@ -669,33 +646,8 @@ static rt_err_t rt_serial_close(struct rt_device *dev)
         dev->open_flag &= ~RT_DEVICE_FLAG_DMA_RX;
     }
 #endif /* RT_SERIAL_USING_DMA */
+#endif /* RT_SERIAL_USING_INT */ 
     
-    if (dev->open_flag & RT_DEVICE_FLAG_INT_TX)
-    {
-        struct rt_serial_tx_fifo* tx_fifo;
-
-        tx_fifo = (struct rt_serial_tx_fifo*)serial->serial_tx;
-        RT_ASSERT(tx_fifo != RT_NULL);
-
-        rt_free(tx_fifo);
-        serial->serial_tx = RT_NULL;
-        dev->open_flag &= ~RT_DEVICE_FLAG_INT_TX;
-        /* configure low level device */
-        serial->ops->control(serial, RT_DEVICE_CTRL_CLR_INT, (void*)RT_DEVICE_FLAG_INT_TX);
-    }
-#ifdef RT_SERIAL_USING_DMA
-    else if (dev->open_flag & RT_DEVICE_FLAG_DMA_TX)
-    {
-        struct rt_serial_tx_dma* tx_dma;
-
-        tx_dma = (struct rt_serial_tx_dma*)serial->serial_tx;
-        RT_ASSERT(tx_dma != RT_NULL);
-
-        rt_free(tx_dma);
-        serial->serial_tx = RT_NULL;
-        dev->open_flag &= ~RT_DEVICE_FLAG_DMA_TX;
-    }
-#endif /* RT_SERIAL_USING_DMA */
     return RT_EOK;
 }
 
@@ -711,6 +663,7 @@ static rt_size_t rt_serial_read(struct rt_device *dev,
 
     serial = (struct rt_serial_device *)dev;
 
+#ifdef RT_SERIAL_USING_INT
     if (dev->open_flag & RT_DEVICE_FLAG_INT_RX)
     {
         return _serial_int_rx(serial, buffer, size);
@@ -720,7 +673,8 @@ static rt_size_t rt_serial_read(struct rt_device *dev,
     {
         return _serial_dma_rx(serial, buffer, size);
     }
-#endif /* RT_SERIAL_USING_DMA */    
+#endif /* RT_SERIAL_USING_DMA */  
+#endif /* RT_SERIAL_USING_INT */    
 
     return _serial_poll_rx(serial, buffer, size);
 }
@@ -737,20 +691,7 @@ static rt_size_t rt_serial_write(struct rt_device *dev,
 
     serial = (struct rt_serial_device *)dev;
 
-    if (dev->open_flag & RT_DEVICE_FLAG_INT_TX)
-    {
-        return 0;
-    }
-#ifdef RT_SERIAL_USING_DMA    
-    else if (dev->open_flag & RT_DEVICE_FLAG_DMA_TX)
-    {
-        return 0;
-    }
-#endif /* RT_SERIAL_USING_DMA */
-    else
-    {
-        return _serial_poll_tx(serial, buffer, size);
-    }
+    return _serial_poll_tx(serial, buffer, size);
 }
 
 #ifdef RT_USING_POSIX_TERMIOS
@@ -1060,6 +1001,7 @@ rt_err_t rt_hw_serial_register(struct rt_serial_device *serial,
     return ret;
 }
 
+#ifdef RT_SERIAL_USING_INT
 /* ISR for serial interrupt */
 void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
 {
@@ -1168,4 +1110,4 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
 #endif /* RT_SERIAL_USING_DMA */
     }
 }
-
+#endif /* RT_SERIAL_USING_INT */

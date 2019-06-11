@@ -568,8 +568,8 @@ struct rt_thread
 
     rt_uint8_t  stat;                                   /**< thread status */
 
-    rt_ubase_t  init_tick;                              /**< thread's initialized tick */
-    rt_ubase_t  remaining_tick;                         /**< remaining tick */
+    rt_base_t  init_tick;                              /**< thread's initialized tick */
+    rt_base_t  remaining_tick;                         /**< remaining tick */
 
     void (*cleanup)(struct rt_thread *tid);             /**< cleanup function when thread exit */
 
@@ -875,6 +875,9 @@ enum rt_device_class_type
 #endif
 #ifdef AT_USING_CLI
 #define RT_DEVICE_AT_CLI_BELONG         0x03
+#endif
+#ifdef RT_USING_RYM
+#define RT_DEVICE_RYM_BELONG            0x04
 #endif
 
 typedef struct rt_device *rt_device_t;

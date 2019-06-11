@@ -14,12 +14,6 @@
 #include <rtthread.h>
 #include "finsh.h"
 
-#ifndef FINSH_THREAD_PRIORITY
-#define FINSH_THREAD_PRIORITY 20
-#endif
-#ifndef FINSH_THREAD_STACK_SIZE
-#define FINSH_THREAD_STACK_SIZE 2048
-#endif
 #ifndef FINSH_CMD_SIZE
 #define FINSH_CMD_SIZE      80
 #endif

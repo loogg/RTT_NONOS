@@ -59,36 +59,26 @@ rt_uint16_t CRC16(unsigned char *q, int len)
 // rt_device_t->user_data(it is used by the serial driver)...
 static struct rym_ctx *_rym_the_ctx;
 
-static rt_err_t _rym_rx_ind(rt_device_t dev, rt_size_t size)
-{
-    return rt_sem_release(&_rym_the_ctx->sem);
-}
-
-/* SOH/STX + seq + payload + crc */
-#define _RYM_SOH_PKG_SZ (1+2+128+2)
-#define _RYM_STX_PKG_SZ (1+2+1024+2)
-
 static enum rym_code _rym_read_code(
         struct rym_ctx *ctx,
         rt_tick_t timeout)
 {
+    rt_tick_t timeout_tick;
     /* Fast path */
     if (rt_device_read(ctx->dev, 0, ctx->buf, 1) == 1)
         return (enum rym_code)(*ctx->buf);
-
+    
+    timeout_tick = rt_tick_get() + timeout;
     /* Slow path */
     do {
         rt_size_t rsz;
-
-        /* No data yet, wait for one */
-        if (rt_sem_take(&ctx->sem, timeout) != RT_EOK)
-            return RYM_CODE_NONE;
 
         /* Try to read one */
         rsz = rt_device_read(ctx->dev, 0, ctx->buf, 1);
         if (rsz == 1)
             return (enum rym_code)(*ctx->buf);
-    } while (1);
+    } while ((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
+    return RYM_CODE_NONE;
 }
 
 /* the caller should at least alloc _RYM_STX_PKG_SZ buffer */
@@ -96,19 +86,24 @@ static rt_size_t _rym_read_data(
         struct rym_ctx *ctx,
         rt_size_t len)
 {
+    rt_tick_t timeout_tick;
     /* we should already have had the code */
     rt_uint8_t *buf = ctx->buf + 1;
-    rt_size_t readlen = 0;
+    rt_size_t total_len = 0;
 
+    timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
     do
     {
-        readlen += rt_device_read(ctx->dev,
-                0, buf+readlen, len-readlen);
-        if (readlen >= len)
-            return readlen;
-    } while (rt_sem_take(&ctx->sem, RYM_WAIT_CHR_TICK) == RT_EOK);
+        rt_size_t readlen = rt_device_read(ctx->dev,
+                0, buf+total_len, len-total_len);
+        if(readlen)
+            timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
+        total_len += readlen;
+        if (total_len >= len)
+            return total_len;
+    } while ((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
 
-    return readlen;
+    return total_len;
 }
 
 static rt_size_t _rym_putchar(struct rym_ctx *ctx, rt_uint8_t code)
@@ -157,7 +152,7 @@ static rt_err_t _rym_do_handshake(
     while (rt_tick_get() <= (tick + rt_tick_from_millisecond(100)) && i < (data_sz-1))
     {
         i += _rym_read_data(ctx, data_sz - 1);
-        rt_thread_mdelay(5);
+        rt_tick_delay(5);
     }
 
     if (i != (data_sz - 1))
@@ -342,9 +337,11 @@ static rt_err_t _rym_do_recv(
 
     ctx->stage = RYM_STAGE_NONE;
 
+#ifdef RT_USING_HEAP
     ctx->buf = rt_malloc(_RYM_STX_PKG_SZ);
     if (ctx->buf == RT_NULL)
         return -RT_ENOMEM;
+#endif
 
     err = _rym_do_handshake(ctx, handshake_timeout);
     if (err != RT_EOK)
@@ -374,8 +371,9 @@ rt_err_t rym_recv_on_device(
         int handshake_timeout)
 {
     rt_err_t res;
-    rt_err_t (*odev_rx_ind)(rt_device_t dev, rt_size_t size);
     rt_uint16_t odev_flag;
+    rt_uint16_t odev_thread_belong;
+
     int int_lvl;
 
     RT_ASSERT(_rym_the_ctx == 0);
@@ -385,17 +383,16 @@ rt_err_t rym_recv_on_device(
     ctx->on_data  = on_data;
     ctx->on_end   = on_end;
     ctx->dev      = dev;
-    rt_sem_init(&ctx->sem, "rymsem", 0, RT_IPC_FLAG_FIFO);
 
-    odev_rx_ind = dev->rx_indicate;
     /* no data should be received before the device has been fully setted up.
      */
     int_lvl = rt_hw_interrupt_disable();
-    rt_device_set_rx_indicate(dev, _rym_rx_ind);
-
     odev_flag = dev->flag;
+    odev_thread_belong = dev->thread_belong;
+
     /* make sure the device don't change the content. */
     dev->flag &= ~RT_DEVICE_FLAG_STREAM;
+    dev->thread_belong = RT_DEVICE_RYM_BELONG;
     rt_hw_interrupt_enable(int_lvl);
 
     res = rt_device_open(dev, oflag);
@@ -410,13 +407,13 @@ __exit:
     /* no rx_ind should be called before the callback has been fully detached.
      */
     int_lvl = rt_hw_interrupt_disable();
-    rt_sem_detach(&ctx->sem);
-
+    dev->thread_belong = odev_thread_belong;
     dev->flag = odev_flag;
-    rt_device_set_rx_indicate(dev, odev_rx_ind);
     rt_hw_interrupt_enable(int_lvl);
 
+#ifdef RT_USING_HEAP
     rt_free(ctx->buf);
+#endif
     _rym_the_ctx = RT_NULL;
 
     return res;

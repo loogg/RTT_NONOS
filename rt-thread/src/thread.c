@@ -47,42 +47,12 @@ void rt_thread_inited_sethook(void (*hook)(rt_thread_t thread))
 
 #endif
 
-void rt_thread_exit(void)
-{
-    struct rt_thread *thread;
-    register rt_base_t level;
-
-    /* get current thread */
-    thread = rt_thread_self();
-
-    /* disable interrupt */
-    level = rt_hw_interrupt_disable();
-
-    /* remove from schedule */
-    rt_schedule_remove_thread(thread);
-    /* change stat */
-    thread->stat = RT_THREAD_CLOSE;
-
-    if ((rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE) &&
-        thread->cleanup == RT_NULL)
-    {
-        rt_object_detach((rt_object_t)thread);
-    }
-    else
-    {
-        /* insert to defunct thread list */
-        rt_list_insert_after(&rt_thread_defunct, &(thread->tlist));
-    }
-
-    /* enable interrupt */
-    rt_hw_interrupt_enable(level);
-}
 
 static rt_err_t _rt_thread_init(struct rt_thread *thread,
                                 const char       *name,
                                 void (*entry)(void *parameter),
                                 void             *parameter,
-                                rt_uint32_t       tick)
+                                rt_int32_t       tick)
 {
     /* init thread list */
     rt_list_init(&(thread->tlist));
@@ -90,6 +60,7 @@ static rt_err_t _rt_thread_init(struct rt_thread *thread,
     thread->entry = entry;
     thread->parameter = parameter;
 
+    RT_ASSERT(tick >= 0);
     /* tick init */
     thread->init_tick      = tick;
     thread->remaining_tick = tick;
@@ -132,7 +103,7 @@ rt_err_t rt_thread_init(struct rt_thread *thread,
                         const char       *name,
                         void (*entry)(void *parameter),
                         void             *parameter,
-                        rt_uint32_t       tick)
+                        rt_int32_t       tick)
 {
     /* thread check */
     RT_ASSERT(thread != RT_NULL);
@@ -249,7 +220,7 @@ RTM_EXPORT(rt_thread_detach);
 rt_thread_t rt_thread_create(const char *name,
                              void (*entry)(void *parameter),
                              void       *parameter,
-                             rt_uint32_t tick)
+                             rt_int32_t tick)
 {
     struct rt_thread *thread;
 
@@ -331,7 +302,7 @@ rt_err_t rt_thread_sleep(rt_tick_t tick)
     /* suspend thread */
     rt_thread_suspend(thread);
 
-    thread->remaining_tick += tick;
+    thread->remaining_tick = tick;
 
     /* enable interrupt */
     rt_hw_interrupt_enable(temp);
@@ -451,7 +422,8 @@ rt_err_t rt_thread_suspend(rt_thread_t thread)
 
     /* change thread stat */
     thread->stat = RT_THREAD_SUSPEND | (thread->stat & ~RT_THREAD_STAT_MASK);
-
+    thread->remaining_tick = -1;
+    
     /* enable interrupt */
     rt_hw_interrupt_enable(temp);
 
@@ -494,6 +466,7 @@ rt_err_t rt_thread_resume(rt_thread_t thread)
     /* enable interrupt */
     rt_hw_interrupt_enable(temp);
 
+    thread->remaining_tick = thread->init_tick;
     /* insert to schedule ready list */
     rt_schedule_insert_thread(thread);
 

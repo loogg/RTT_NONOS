@@ -7,7 +7,6 @@ rt_hw_spinlock_t _rt_critical_lock;
 
 rt_list_t rt_thread_priority;
 #ifndef RT_USING_SMP
-extern volatile rt_uint8_t rt_interrupt_nest;
 struct rt_thread *rt_current_thread;
 #endif /*RT_USING_SMP*/
 
@@ -66,12 +65,9 @@ void rt_schedule(void)
     rt_list_t *l;
     rt_list_for_each(l, &rt_thread_priority)
     {
-            /* disable interrupt */
-        level = rt_hw_interrupt_disable();
         thread = rt_list_entry(l,
                                struct rt_thread,
                                tlist);
-        rt_hw_interrupt_enable(level);
         if((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_READY)
         {
             rt_current_thread = thread;

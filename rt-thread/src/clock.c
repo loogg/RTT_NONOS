@@ -70,7 +70,7 @@ void rt_tick_increase(void)
         thread = rt_list_entry(l,
                                struct rt_thread,
                                tlist);
-        if((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_SUSPEND)
+        if(((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_SUSPEND) && (thread->remaining_tick >= 0))
         {  
             if(thread->remaining_tick == 0)
             {
@@ -111,6 +111,15 @@ rt_tick_t rt_tick_from_millisecond(rt_int32_t ms)
     return tick;
 }
 RTM_EXPORT(rt_tick_from_millisecond);
+
+/**
+ * This function will blocking delay thread.
+ */
+void rt_tick_delay(rt_tick_t tick)
+{
+    rt_tick_t timeout_tick = rt_tick_get() + tick;
+    while((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
+}
 
 /**@}*/
 
