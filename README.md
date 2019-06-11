@@ -8,8 +8,14 @@ RTT_NONOS基于RT-Thread 4.0.1，是RT-Thread的裸机版本。使用 **状态�
 
 [Project](./Project) 文件夹下的是目前所实现的工程。
 
-<video id="video" controls="" preload="none">
-    <source id="mp4" src="./figures/bandicam 2019-06-08 22-12-48-138.mp4" type="video/mp4">
-</video>
+工程中所实现的功能如下：
+
+开机首先倒计时，如果没有输入，则执行bootcmd的指令，如果有输入则转入shell接口。
+
+![bootcmd](./figures/1.gif)
+
+使用Ymode下载如下。
+
+![ymode](./figures/2.gif)
 
     
