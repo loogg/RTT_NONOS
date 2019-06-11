@@ -557,7 +557,7 @@ struct rt_thread
 
     rt_list_t   list;                                   /**< the object list */
     rt_list_t   tlist;                                  /**< the thread list */
-    
+
     /* stack point and entry */
     void (*entry)(void *parameter);                                  /**< entry */
     void       *parameter;                              /**< parameter */
@@ -571,6 +571,9 @@ struct rt_thread
     rt_base_t  init_tick;                              /**< thread's initialized tick */
     rt_base_t  remaining_tick;                         /**< remaining tick */
 
+    void (*cleanup)(struct rt_thread *tid);             /**< cleanup function when thread exit */
+
+    rt_uint32_t user_data;                             /**< private user data beyond this thread */
 };
 typedef struct rt_thread *rt_thread_t;
 

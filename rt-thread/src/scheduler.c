@@ -60,7 +60,6 @@ void rt_system_scheduler_init(void)
  */
 void rt_schedule(void)
 {
-    rt_base_t level;
     rt_thread_t thread;
     rt_list_t *l;
     rt_list_for_each(l, &rt_thread_priority)

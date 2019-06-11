@@ -85,7 +85,7 @@ static enum rym_code ymodem_on_data(struct rym_ctx *ctx, rt_uint8_t *buf, rt_siz
     return RYM_CODE_ACK;
 }
 
-void ymodem_ota(uint8_t argc, char **argv)
+int ymodem_ota(uint8_t argc, char **argv)
 {
     if (argc < 2)
     {
@@ -98,14 +98,14 @@ void ymodem_ota(uint8_t argc, char **argv)
         if (!strcmp(operator, "-p")) {
             if (argc < 3) {
                 rt_kprintf("Usage: ymodem_ota -p <partiton name>.\n");
-                return;
+                return -RT_ERROR;
             } else {
                 /* change default partition to save firmware */
                 recv_partition = argv[2];  
             }
         }else{
             rt_kprintf("Usage: ymodem_ota -p <partiton name>.\n");
-            return;
+            return -RT_ERROR;
         }
 
         rt_kprintf("Warning: Ymodem has started! This operator will not recovery.\n");
@@ -122,10 +122,11 @@ void ymodem_ota(uint8_t argc, char **argv)
             /* wait some time for terminal response finish */
             rt_tick_delay(RT_TICK_PER_SECOND);
             rt_kprintf("Update firmware fail.\n");
+            return -RT_ERROR;
         }
     }
 
-    return;
+    return RT_EOK;
 }
 /**
  * msh />ymodem_ota

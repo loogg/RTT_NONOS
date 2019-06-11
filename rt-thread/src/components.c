@@ -159,7 +159,6 @@ void rt_application_init(void)
     extern int main(void);
     extern int $Super$$main(void);
     
-    __enable_irq();
     /* RT-Thread components initialization */
     rt_components_init();
     
@@ -176,7 +175,8 @@ void rt_application_init(void)
 
 int rtthread_startup(void)
 {
-    rt_hw_interrupt_disable();
+    rt_base_t level;
+    level = rt_hw_interrupt_disable();
 
     /* board level initialization
      * NOTE: please initialize heap inside board initialization.
@@ -192,7 +192,7 @@ int rtthread_startup(void)
     /* idle thread initialization */
     rt_thread_idle_init();
 
-
+    rt_hw_interrupt_enable(level);
     /* create init_thread */
     rt_application_init();
 

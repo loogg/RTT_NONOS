@@ -69,9 +69,6 @@ static rt_err_t _rt_thread_init(struct rt_thread *thread,
     thread->error = RT_EOK;
     thread->stat  = RT_THREAD_INIT;
 
-    /* initialize cleanup function and user data */
-    thread->cleanup   = 0;
-    thread->user_data = 0;
 
     RT_OBJECT_HOOK_CALL(rt_thread_inited_hook, (thread));
 
@@ -168,8 +165,6 @@ RTM_EXPORT(rt_thread_startup);
  */
 rt_err_t rt_thread_detach(rt_thread_t thread)
 {
-    rt_base_t lock;
-
     /* thread check */
     RT_ASSERT(thread != RT_NULL);
     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
@@ -184,20 +179,7 @@ rt_err_t rt_thread_detach(rt_thread_t thread)
     /* change stat */
     thread->stat = RT_THREAD_CLOSE;
 
-    if ((rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE) &&
-        thread->cleanup == RT_NULL)
-    {
-        rt_object_detach((rt_object_t)thread);
-    }
-    else
-    {
-        /* disable interrupt */
-        lock = rt_hw_interrupt_disable();
-        /* insert to defunct thread list */
-        rt_list_insert_after(&rt_thread_defunct, &(thread->tlist));
-        /* enable interrupt */
-        rt_hw_interrupt_enable(lock);
-    }
+    rt_object_detach((rt_object_t)thread);
 
     return RT_EOK;
 }
@@ -345,43 +327,6 @@ rt_err_t rt_thread_mdelay(rt_int32_t ms)
 }
 RTM_EXPORT(rt_thread_mdelay);
 
-/**
- * This function will control thread behaviors according to control command.
- *
- * @param thread the specified thread to be controlled
- * @param cmd the control command, which includes
- *  RT_THREAD_CTRL_CHANGE_PRIORITY for changing priority level of thread;
- *  RT_THREAD_CTRL_STARTUP for starting a thread;
- *  RT_THREAD_CTRL_CLOSE for delete a thread;
- *  RT_THREAD_CTRL_BIND_CPU for bind the thread to a CPU.
- * @param arg the argument of control command
- *
- * @return RT_EOK
- */
-rt_err_t rt_thread_control(rt_thread_t thread, int cmd, void *arg)
-{
-
-    /* thread check */
-    RT_ASSERT(thread != RT_NULL);
-    RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
-
-    switch (cmd)
-    {
-    case RT_THREAD_CTRL_STARTUP:
-        return rt_thread_startup(thread);
-
-#ifdef RT_USING_HEAP
-    case RT_THREAD_CTRL_CLOSE:
-        return rt_thread_delete(thread);
-#endif
-
-    default:
-        break;
-    }
-
-    return RT_EOK;
-}
-RTM_EXPORT(rt_thread_control);
 
 /**
  * This function will suspend the specified thread.

@@ -142,21 +142,6 @@ void rt_thread_idle_excute(void)
             /* remove defunct thread */
             rt_list_remove(&(thread->tlist));
                                    
-            /* invoke thread cleanup */
-            if (thread->cleanup != RT_NULL)
-                thread->cleanup(thread);
-            
-            /* if it's a system object, not delete it */
-            if (rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE)
-            {
-                /* detach this object */
-                rt_object_detach((rt_object_t)thread);
-
-                /* enable interrupt */
-                rt_hw_interrupt_enable(lock);
-
-                return;
-            }
         }
         else
         {
