@@ -8,7 +8,7 @@ RTT_NONOS基于RT-Thread 4.0.1，是RT-Thread的裸机版本。使用 **状态�
 
 [Project](./Project) 文件夹下的是目前所实现的工程。
 
-在 [Project/STM32F1](./Project/STM32F1) 下的env中输入pkgs --update下载软件包。
+在 [Project/STM32F1](./Project/STM32F1) 下的 **env** 中输入  `pkgs --update` 下载软件包。
 
 工程中所实现的功能如下：
 
