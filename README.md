@@ -8,6 +8,8 @@ RTT_NONOS基于RT-Thread 4.0.1，是RT-Thread的裸机版本。使用 **状态�
 
 [Project](./Project) 文件夹下的是目前所实现的工程。
 
+在 [Project/STM32F1](./Project/STM32F1) 下的env中输入pkgs --update下载软件包。
+
 工程中所实现的功能如下：
 
 开机首先倒计时，如果没有输入，则执行bootcmd的指令，如果有输入则转入shell接口。
