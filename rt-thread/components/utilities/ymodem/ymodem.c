@@ -8,7 +8,7 @@
  * Date           Author       Notes
  * 2013-04-14     Grissiom     initial implementation
  */
-
+#include "board.h"
 #include <rthw.h>
 #include "ymodem.h"
 
@@ -65,7 +65,7 @@ static enum rym_code _rym_read_code(
 {
     rt_tick_t timeout_tick;
     /* Fast path */
-    if (rt_device_read(ctx->dev, 0, ctx->buf, 1) == 1)
+    if (uart_getc(USART1, (char *)ctx->buf) == 1)
         return (enum rym_code)(*ctx->buf);
     
     timeout_tick = rt_tick_get() + timeout;
@@ -74,7 +74,7 @@ static enum rym_code _rym_read_code(
         rt_size_t rsz;
 
         /* Try to read one */
-        rsz = rt_device_read(ctx->dev, 0, ctx->buf, 1);
+        rsz = uart_getc(USART1, (char *)ctx->buf);
         if (rsz == 1)
             return (enum rym_code)(*ctx->buf);
     } while ((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
@@ -94,8 +94,7 @@ static rt_size_t _rym_read_data(
     timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
     do
     {
-        rt_size_t readlen = rt_device_read(ctx->dev,
-                0, buf+total_len, len-total_len);
+        rt_size_t readlen = uart_getc(USART1, (char *)buf+total_len);
         if(readlen)
             timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
         total_len += readlen;
@@ -108,7 +107,7 @@ static rt_size_t _rym_read_data(
 
 static rt_size_t _rym_putchar(struct rym_ctx *ctx, rt_uint8_t code)
 {
-    rt_device_write(ctx->dev, 0, &code, sizeof(code));
+    uart_putc(USART1, code);
     return 1;
 }
 
@@ -363,8 +362,6 @@ static rt_err_t _rym_do_recv(
 
 rt_err_t rym_recv_on_device(
         struct rym_ctx *ctx,
-        rt_device_t dev,
-        rt_uint16_t oflag,
         rym_callback on_begin,
         rym_callback on_data,
         rym_callback on_end,
@@ -382,34 +379,33 @@ rt_err_t rym_recv_on_device(
     ctx->on_begin = on_begin;
     ctx->on_data  = on_data;
     ctx->on_end   = on_end;
-    ctx->dev      = dev;
 
     /* no data should be received before the device has been fully setted up.
      */
-    int_lvl = rt_hw_interrupt_disable();
-    odev_flag = dev->flag;
-    odev_thread_belong = dev->thread_belong;
+//    int_lvl = rt_hw_interrupt_disable();
+//    odev_flag = dev->flag;
+//    odev_thread_belong = dev->thread_belong;
 
-    /* make sure the device don't change the content. */
-    dev->flag &= ~RT_DEVICE_FLAG_STREAM;
-    dev->thread_belong = RT_DEVICE_RYM_BELONG;
-    rt_hw_interrupt_enable(int_lvl);
+//    /* make sure the device don't change the content. */
+//    dev->flag &= ~RT_DEVICE_FLAG_STREAM;
+//    dev->thread_belong = RT_DEVICE_RYM_BELONG;
+//    rt_hw_interrupt_enable(int_lvl);
 
-    res = rt_device_open(dev, oflag);
-    if (res != RT_EOK)
-        goto __exit;
+//    res = rt_device_open(dev, oflag);
+//    if (res != RT_EOK)
+//        goto __exit;
 
     res = _rym_do_recv(ctx, handshake_timeout);
 
-    rt_device_close(dev);
+//    rt_device_close(dev);
 
 __exit:
     /* no rx_ind should be called before the callback has been fully detached.
      */
-    int_lvl = rt_hw_interrupt_disable();
-    dev->thread_belong = odev_thread_belong;
-    dev->flag = odev_flag;
-    rt_hw_interrupt_enable(int_lvl);
+//    int_lvl = rt_hw_interrupt_disable();
+//    dev->thread_belong = odev_thread_belong;
+//    dev->flag = odev_flag;
+//    rt_hw_interrupt_enable(int_lvl);
 
 #ifdef RT_USING_HEAP
     rt_free(ctx->buf);

@@ -1,13 +1,5 @@
 menu "RT-Thread Kernel"
 
-config RT_NAME_MAX
-    int "The maximal size of kernel object name"
-    range 2 32
-    default 8
-    help
-        Each kernel object, such as thread, timer, semaphore etc, has a name,
-        the RT_NAME_MAX is the maximal size of this object name.
-
 config RT_ALIGN_SIZE
     int "Alignment size for CPU architecture data access"
     default 4
@@ -28,11 +20,6 @@ config RT_ALIGN_SIZE
             bool "256"
     endchoice
 
-config RT_THREAD_PRIORITY_MAX
-    int
-    default 8   if RT_THREAD_PRIORITY_8
-    default 32  if RT_THREAD_PRIORITY_32
-    default 256 if RT_THREAD_PRIORITY_256
 
 config RT_TICK_PER_SECOND
     int "Tick frequency, Hz"
@@ -215,20 +202,6 @@ endmenu
 
 menu "Kernel Device Object"
 
-    config RT_USING_DEVICE
-        bool "Using device object"
-        default y
-
-    config RT_USING_DEVICE_OPS
-        bool "Using ops for each device object"
-        default n
-
-    config RT_USING_INTERRUPT_INFO
-        bool "Enable additional interrupt trace information"
-        default n
-        help
-            Add name and counter information for interrupt trace.
-
     config RT_USING_CONSOLE
         bool "Using console for rt_kprintf"
         default y
@@ -237,10 +210,6 @@ menu "Kernel Device Object"
         config RT_CONSOLEBUF_SIZE
             int "the buffer size for console log printf"
             default 128
-
-        config RT_CONSOLE_DEVICE_NAME
-            string "the device name for console"
-            default "uart"
     endif
 
 endmenu

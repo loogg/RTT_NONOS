@@ -35,30 +35,7 @@ extern "C" {
 
 /**@{*/
 
-/*
- * kernel object interface
- */
-void rt_system_object_init(void);
-struct rt_object_information *
-rt_object_get_information(enum rt_object_class_type type);
-void rt_object_init(struct rt_object         *object,
-                    enum rt_object_class_type type,
-                    const char               *name);
-void rt_object_detach(rt_object_t object);
-rt_object_t rt_object_allocate(enum rt_object_class_type type,
-                               const char               *name);
-void rt_object_delete(rt_object_t object);
-rt_bool_t rt_object_is_systemobject(rt_object_t object);
-rt_uint8_t rt_object_get_type(rt_object_t object);
-rt_object_t rt_object_find(const char *name, rt_uint8_t type);
 
-#ifdef RT_USING_HOOK
-void rt_object_attach_sethook(void (*hook)(struct rt_object *object));
-void rt_object_detach_sethook(void (*hook)(struct rt_object *object));
-void rt_object_trytake_sethook(void (*hook)(struct rt_object *object));
-void rt_object_take_sethook(void (*hook)(struct rt_object *object));
-void rt_object_put_sethook(void (*hook)(struct rt_object *object));
-#endif
 
 /**@}*/
 
@@ -90,7 +67,6 @@ void rt_tick_delay(rt_tick_t tick);
  * thread interface
  */
 rt_err_t rt_thread_init(struct rt_thread *thread,
-                        const char       *name,
                         void (*entry)(void *parameter),
                         void             *parameter,
                         rt_int32_t       tick);

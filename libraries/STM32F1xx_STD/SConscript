@@ -1,0 +1,22 @@
+import rtconfig
+Import('RTT_ROOT')
+from building import *
+
+# get current directory
+cwd = GetCurrentDir()
+
+# The set of source files associated with this SConscript file.
+src = Split("""
+CMSIS/CM3/CoreSupport/core_cm3.c
+""")
+    
+src += Glob('STM32F10x_StdPeriph_Driver/src/*.c')
+
+path = [cwd + '/CMSIS/CM3/CoreSupport', 
+    cwd + '/STM32F10x_StdPeriph_Driver/inc',
+    cwd + '/CMSIS/CM3/DeviceSupport/ST/STM32F10x']
+
+CPPDEFINES = ['USE_STDPERIPH_DRIVER']
+group = DefineGroup('STM32_STD', src, depend = [''], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+
+Return('group')

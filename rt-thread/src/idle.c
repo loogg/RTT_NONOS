@@ -17,7 +17,6 @@
 #define _CPUS_NR 1
 #endif
 
-extern rt_list_t rt_thread_defunct;
 
 static struct rt_thread idle[_CPUS_NR];
 
@@ -98,69 +97,7 @@ rt_err_t rt_thread_idle_delhook(void (*hook)(void))
 
 #endif
 
-/* Return whether there is defunctional thread to be deleted. */
-rt_inline int _has_defunct_thread(void)
-{
-    /* The rt_list_isempty has prototype of "int rt_list_isempty(const rt_list_t *l)".
-     * So the compiler has a good reason that the rt_thread_defunct list does
-     * not change within rt_thread_idle_excute thus optimize the "while" loop
-     * into a "if".
-     *
-     * So add the volatile qualifier here. */
-    const volatile rt_list_t *l = (const volatile rt_list_t *)&rt_thread_defunct;
 
-    return l->next != l;
-}
-
-/**
- * @ingroup Thread
- *
- * This function will perform system background job when system idle.
- */
-void rt_thread_idle_excute(void)
-{
-    /* Loop until there is no dead thread. So one call to rt_thread_idle_excute
-     * will do all the cleanups. */
-    while (_has_defunct_thread())
-    {
-        rt_base_t lock;
-        rt_thread_t thread;
-
-        RT_DEBUG_NOT_IN_INTERRUPT;
-
-        /* disable interrupt */
-        lock = rt_hw_interrupt_disable();
-
-        /* re-check whether list is empty */
-        if (_has_defunct_thread())
-        {
-            /* get defunct thread */
-            thread = rt_list_entry(rt_thread_defunct.next,
-                                   struct rt_thread,
-                                   tlist);
-
-            /* remove defunct thread */
-            rt_list_remove(&(thread->tlist));
-                                   
-        }
-        else
-        {
-            /* enable interrupt */
-            rt_hw_interrupt_enable(lock);
-
-            /* may the defunct thread list is removed by others, just return */
-            return;
-        }
-
-        /* enable interrupt */
-        rt_hw_interrupt_enable(lock);
-
-#ifdef RT_USING_HEAP
-        /* delete thread object */
-        rt_object_delete((rt_object_t)thread);
-#endif
-    }
-}
 
 static void rt_thread_idle_entry(void *parameter)
 {
@@ -176,7 +113,6 @@ static void rt_thread_idle_entry(void *parameter)
         }
     }
 #endif
-    rt_thread_idle_excute();
 }
 
 /**
@@ -189,13 +125,10 @@ static void rt_thread_idle_entry(void *parameter)
 void rt_thread_idle_init(void)
 {
     rt_ubase_t i;
-    char tidle_name[RT_NAME_MAX];
 
     for (i = 0; i < _CPUS_NR; i++)
     {
-        rt_sprintf(tidle_name, "tidle%d", i);
         rt_thread_init(&idle[i],
-                       tidle_name,
                        rt_thread_idle_entry,
                        RT_NULL,
                        0);

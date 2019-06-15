@@ -35,84 +35,6 @@
 
 /**@{*/
 
-/* global errno in RT-Thread */
-static volatile int __rt_errno;
-
-#if defined(RT_USING_DEVICE) && defined(RT_USING_CONSOLE)
-static rt_device_t _console_device = RT_NULL;
-#endif
-
-/*
- * This function will get errno
- *
- * @return errno
- */
-rt_err_t rt_get_errno(void)
-{
-    rt_thread_t tid;
-
-    if (rt_interrupt_get_nest() != 0)
-    {
-        /* it's in interrupt context */
-        return __rt_errno;
-    }
-
-    tid = rt_thread_self();
-    if (tid == RT_NULL)
-        return __rt_errno;
-
-    return tid->error;
-}
-RTM_EXPORT(rt_get_errno);
-
-/*
- * This function will set errno
- *
- * @param error the errno shall be set
- */
-void rt_set_errno(rt_err_t error)
-{
-    rt_thread_t tid;
-
-    if (rt_interrupt_get_nest() != 0)
-    {
-        /* it's in interrupt context */
-        __rt_errno = error;
-
-        return;
-    }
-
-    tid = rt_thread_self();
-    if (tid == RT_NULL)
-    {
-        __rt_errno = error;
-
-        return;
-    }
-
-    tid->error = error;
-}
-RTM_EXPORT(rt_set_errno);
-
-/**
- * This function returns errno.
- *
- * @return the errno in the system
- */
-int *_rt_errno(void)
-{
-    rt_thread_t tid;
-
-    if (rt_interrupt_get_nest() != 0)
-        return (int *)&__rt_errno;
-
-    tid = rt_thread_self();
-    if (tid != RT_NULL)
-        return (int *) & (tid->error);
-
-    return (int *)&__rt_errno;
-}
-RTM_EXPORT(_rt_errno);
 
 /**
  * This function will set the content of memory to specified value
@@ -1094,54 +1016,6 @@ RTM_EXPORT(rt_sprintf);
 
 #ifdef RT_USING_CONSOLE
 
-#ifdef RT_USING_DEVICE
-/**
- * This function returns the device using in console.
- *
- * @return the device using in console or RT_NULL
- */
-rt_device_t rt_console_get_device(void)
-{
-    return _console_device;
-}
-RTM_EXPORT(rt_console_get_device);
-
-/**
- * This function will set a device as console device.
- * After set a device to console, all output of rt_kprintf will be
- * redirected to this new device.
- *
- * @param name the name of new console device
- *
- * @return the old console device handler
- */
-rt_device_t rt_console_set_device(const char *name)
-{
-    rt_device_t new, old;
-
-    /* save old device */
-    old = _console_device;
-
-    /* find new console device */
-    new = rt_device_find(name);
-    if (new != RT_NULL)
-    {
-        if (_console_device != RT_NULL)
-        {
-            /* close old console device */
-            rt_device_close(_console_device);
-        }
-
-        /* set new console device */
-        rt_device_open(new, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_STREAM);
-        _console_device = new;
-    }
-
-    return old;
-}
-RTM_EXPORT(rt_console_set_device);
-#endif
-
 RT_WEAK void rt_hw_console_output(const char *str)
 {
     /* empty console output */
@@ -1157,22 +1031,8 @@ void rt_kputs(const char *str)
 {
     if (!str) return;
 
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(str);
-    }
-    else
-    {
-        rt_uint16_t old_flag = _console_device->open_flag;
-
-        _console_device->open_flag |= RT_DEVICE_FLAG_STREAM;
-        rt_device_write(_console_device, 0, str, rt_strlen(str));
-        _console_device->open_flag = old_flag;
-    }
-#else
     rt_hw_console_output(str);
-#endif
+
 }
 
 /**
@@ -1195,22 +1055,9 @@ void rt_kprintf(const char *fmt, ...)
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(rt_log_buf);
-    }
-    else
-    {
-        rt_uint16_t old_flag = _console_device->open_flag;
 
-        _console_device->open_flag |= RT_DEVICE_FLAG_STREAM;
-        rt_device_write(_console_device, 0, rt_log_buf, length);
-        _console_device->open_flag = old_flag;
-    }
-#else
     rt_hw_console_output(rt_log_buf);
-#endif
+
     va_end(args);
 }
 RTM_EXPORT(rt_kprintf);

@@ -115,7 +115,6 @@ struct rym_ctx
     rt_uint8_t buf[_RYM_STX_PKG_SZ];
 #endif
 
-    rt_device_t dev;
 };
 
 /** recv a file on device dev with ymodem session ctx.
@@ -143,7 +142,7 @@ struct rym_ctx
  * @param handshake_timeout the timeout when hand shaking. The unit is in
  * second.
  */
-rt_err_t rym_recv_on_device(struct rym_ctx *ctx, rt_device_t dev, rt_uint16_t oflag,
+rt_err_t rym_recv_on_device(struct rym_ctx *ctx,
         rym_callback on_begin, rym_callback on_data, rym_callback on_end,
         int handshake_timeout);
 

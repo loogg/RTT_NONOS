@@ -1,29 +1,10 @@
-/*
- * Copyright (c) 2006-2018, RT-Thread Development Team
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2006-04-30     Bernard      the first version for FinSH
- * 2006-05-08     Bernard      change finsh thread stack to 2048
- * 2006-06-03     Bernard      add support for skyeye
- * 2006-09-24     Bernard      remove the code related with hardware
- * 2010-01-18     Bernard      fix down then up key bug.
- * 2010-03-19     Bernard      fix backspace issue and fix device read in shell.
- * 2010-04-01     Bernard      add prompt output when start and remove the empty history
- * 2011-02-23     Bernard      fix variable section end issue of finsh shell
- *                             initialization when use GNU GCC compiler.
- * 2016-11-26     armink       add password authentication
- * 2018-07-02     aozima       add custome prompt support.
- */
-
 #include <rthw.h>
 
 #ifdef RT_USING_FINSH
 
 #include "finsh.h"
 #include "shell.h"
+#include "drv_common.h"
 
 #ifdef FINSH_USING_MSH
 #include "msh.h"
@@ -34,36 +15,13 @@
 #endif
 
 /* finsh thread */
-#ifndef RT_USING_HEAP
+
 static struct rt_thread finsh_thread;
 struct finsh_shell _shell;
-#endif
 
 struct finsh_shell *shell;
 static char *finsh_prompt_custom = RT_NULL;
 
-#ifdef RT_USING_HEAP
-int finsh_set_prompt(const char *prompt)
-{
-    if (finsh_prompt_custom)
-    {
-        rt_free(finsh_prompt_custom);
-        finsh_prompt_custom = RT_NULL;
-    }
-
-    /* strdup */
-    if (prompt)
-    {
-        finsh_prompt_custom = rt_malloc(strlen(prompt) + 1);
-        if (finsh_prompt_custom)
-        {
-            strcpy(finsh_prompt_custom, prompt);
-        }
-    }
-
-    return 0;
-}
-#endif /* RT_USING_HEAP */
 
 #if defined(RT_USING_DFS)
 #include <dfs_posix.h>
@@ -141,72 +99,17 @@ static int finsh_getchar(void)
     char ch = 0;
 
     RT_ASSERT(shell != RT_NULL);
-
-    if(shell->device->thread_belong == RT_DEVICE_SHELL_BELONG)
-        rt_device_read(shell->device, -1, &ch, 1);
+    
+    uart_getc(USART1, &ch);
     return (int)ch;
 #endif
 }
 
 #ifndef RT_USING_POSIX
 
-/**
- * @ingroup finsh
- *
- * This function sets the input device of finsh shell.
- *
- * @param device_name the name of new input device.
- */
-void finsh_set_device(const char *device_name)
-{
-    rt_device_t dev = RT_NULL;
 
-    RT_ASSERT(shell != RT_NULL);
-    dev = rt_device_find(device_name);
-    if (dev == RT_NULL)
-    {
-        rt_kprintf("finsh: can not find device: %s\n", device_name);
-        return;
-    }
 
-    /* check whether it's a same device */
-    if (dev == shell->device)
-        return;
-    /* open this device and set the new device in finsh shell */
-#ifdef FINSH_USING_HISTORY
-    if (rt_device_open(dev, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_STREAM) == RT_EOK)
-#else
-    if (rt_device_open(dev, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_STREAM) == RT_EOK)
-#endif
-    {
-        if (shell->device != RT_NULL)
-        {
-            /* close old finsh device */
-            rt_device_close(shell->device);
-            rt_device_set_rx_indicate(shell->device, RT_NULL);
-        }
 
-        /* clear line buffer before switch to new device */
-        memset(shell->line, 0, sizeof(shell->line));
-        shell->line_curpos = shell->line_position = 0;
-
-        shell->device = dev;
-        shell->device->thread_belong = RT_DEVICE_SHELL_BELONG;
-    }
-}
-
-/**
- * @ingroup finsh
- *
- * This function returns current finsh shell input device.
- *
- * @return the finsh shell input device name is returned.
- */
-const char *finsh_get_device()
-{
-    RT_ASSERT(shell != RT_NULL);
-    return shell->device->parent.name;
-}
 #endif
 
 /**
@@ -794,23 +697,11 @@ int finsh_system_init(void)
 #endif
 #endif
 
-#ifdef RT_USING_HEAP
-    /* create or set shell structure */
-    shell = (struct finsh_shell *)rt_calloc(1, sizeof(struct finsh_shell));
-    if (shell == RT_NULL)
-    {
-        rt_kprintf("no memory for shell\n");
-        return -1;
-    }
-    tid = rt_thread_create(FINSH_THREAD_NAME,
-                           finsh_thread_entry, RT_NULL, 0);
-#else
+
     shell = &_shell;
     tid = &finsh_thread;
     result = rt_thread_init(&finsh_thread,
-                            FINSH_THREAD_NAME,
                             finsh_thread_entry, RT_NULL, 0);
-#endif /* RT_USING_HEAP */
 
     finsh_set_prompt_mode(1);
 
@@ -829,15 +720,7 @@ int finsh_system_init(void)
 #endif
 
 #ifndef RT_USING_POSIX
-    /* set console device as shell device */
-    if (shell->device == RT_NULL)
-    {
-        rt_device_t console = rt_console_get_device();
-        if (console)
-        {
-            finsh_set_device(console->parent.name);
-        }
-    }
+
 #endif
 
 #ifdef FINSH_USING_AUTH

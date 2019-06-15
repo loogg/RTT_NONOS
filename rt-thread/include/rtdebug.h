@@ -73,7 +73,7 @@
 
 /* Turn on this to enable context check */
 #ifndef RT_DEBUG_CONTEXT_CHECK
-#define RT_DEBUG_CONTEXT_CHECK         1
+#define RT_DEBUG_CONTEXT_CHECK         0
 #endif
 
 #define RT_DEBUG_LOG(type, message)                                           \

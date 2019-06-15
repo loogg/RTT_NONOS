@@ -293,7 +293,7 @@ FINSH_FUNCTION_EXPORT_ALIAS(cmd_echo, __cmd_echo, echo string to file);
 
 int cmd_ps(int argc, char **argv)
 {
-    extern long list_thread(void);
+//    extern long list_thread(void);
     extern int list_module(void);
 
 #ifdef RT_USING_MODULE
@@ -301,7 +301,7 @@ int cmd_ps(int argc, char **argv)
         list_module();
     else
 #endif
-        list_thread();
+//        list_thread();
     return 0;
 }
 FINSH_FUNCTION_EXPORT_ALIAS(cmd_ps, __cmd_ps, List threads in the system.);

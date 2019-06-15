@@ -75,9 +75,6 @@ struct finsh_shell
     rt_uint8_t line_position;
     rt_uint8_t line_curpos;
 
-#ifndef RT_USING_POSIX
-    rt_device_t device;
-#endif
 
 #ifdef FINSH_USING_AUTH
     char password[FINSH_PASSWORD_MAX];

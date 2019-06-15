@@ -206,7 +206,6 @@ void rt_system_heap_init(void *begin_addr, void *end_addr)
     rt_ubase_t begin_align = RT_ALIGN((rt_ubase_t)begin_addr, RT_ALIGN_SIZE);
     rt_ubase_t end_align   = RT_ALIGN_DOWN((rt_ubase_t)end_addr, RT_ALIGN_SIZE);
 
-    RT_DEBUG_NOT_IN_INTERRUPT;
 
     /* alignment addr */
     if ((end_align > (2 * SIZEOF_STRUCT_MEM)) &&
@@ -274,7 +273,7 @@ void *rt_malloc(rt_size_t size)
     if (size == 0)
         return RT_NULL;
 
-    RT_DEBUG_NOT_IN_INTERRUPT;
+
 
     if (size != RT_ALIGN(size, RT_ALIGN_SIZE))
         RT_DEBUG_LOG(RT_DEBUG_MEM, ("malloc size %d, but align to %d\n",
@@ -418,7 +417,7 @@ void *rt_realloc(void *rmem, rt_size_t newsize)
     struct heap_mem *mem, *mem2;
     void *nmem;
 
-    RT_DEBUG_NOT_IN_INTERRUPT;
+
 
     /* alignment size */
     newsize = RT_ALIGN(newsize, RT_ALIGN_SIZE);
@@ -538,7 +537,7 @@ void rt_free(void *rmem)
     if (rmem == RT_NULL)
         return;
 
-    RT_DEBUG_NOT_IN_INTERRUPT;
+
 
     RT_ASSERT((((rt_ubase_t)rmem) & (RT_ALIGN_SIZE - 1)) == 0);
     RT_ASSERT((rt_uint8_t *)rmem >= (rt_uint8_t *)heap_ptr &&

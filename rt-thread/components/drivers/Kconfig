@@ -6,7 +6,6 @@ config RT_USING_DEVICE_IPC
 
 config RT_USING_SERIAL
     bool "Using serial device drivers"
-    select RT_USING_DEVICE
     default y
 
 if RT_USING_SERIAL

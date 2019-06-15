@@ -1,0 +1,38 @@
+import os
+import rtconfig
+from building import *
+
+Import('SDK_LIB')
+
+cwd = GetCurrentDir()
+
+# add general drivers
+src = Split('''
+board.c
+config/src/stm32f1xx_std_msp.c
+config/src/stm32f10x_it.c
+config/src/system_stm32f10x.c
+''')
+
+if GetDepend(['PKG_USING_EASYFLASH']):
+    src += Glob('ports/ef_fal_port.c')
+    
+if GetDepend(['BSP_USING_SPI_FLASH']):
+    src += Glob('ports/spi_flash_init.c')
+
+path =  [cwd]
+path += [cwd + '/config/inc']
+path += [cwd + '/ports']
+
+startup_path_prefix = SDK_LIB
+
+if rtconfig.CROSS_TOOL == 'gcc':
+    src += [startup_path_prefix + '/STM32F1xx_STD/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/TrueSTUDIO/startup_stm32f10x_hd.s']
+elif rtconfig.CROSS_TOOL == 'keil':
+    src += [startup_path_prefix + '/STM32F1xx_STD/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/arm/startup_stm32f10x_hd.s']
+elif rtconfig.CROSS_TOOL == 'iar':
+    src += [startup_path_prefix + '/STM32F1xx_STD/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/iar/startup_stm32f10x_hd.s']
+    
+CPPDEFINES = ['STM32F10X_HD']
+group = DefineGroup('Drivers', src, depend = [''], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+Return('group')
