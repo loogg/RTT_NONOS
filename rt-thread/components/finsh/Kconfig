@@ -41,7 +41,7 @@ config FINSH_PASSWORD_MIN
     default 6
 config FINSH_PASSWORD_MAX
     int "The password max length"
-    default RT_NAME_MAX
+    default 8
 endif
 
 config FINSH_USING_MSH

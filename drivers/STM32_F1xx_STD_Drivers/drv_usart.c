@@ -18,19 +18,40 @@ void uart_init(USART_TypeDef *uart, uint32_t UsartBaudRate, uint16_t UsartWordLe
 
 int uart_putc(USART_TypeDef *uart, char c)
 {
-    USART_ClearFlag(uart, USART_FLAG_TC);
-    uart->DR = c;
-    while(USART_GetFlagStatus(uart, USART_FLAG_TC) == RESET);
-    return 1;
+    return uart_send_data(uart, (uint8_t *)&c, 1);
 }
 
 int uart_getc(USART_TypeDef *uart, char *ch)
 {
-    if(USART_GetFlagStatus(uart, USART_FLAG_RXNE) != RESET)
+    return uart_read_data(uart, (uint8_t *)ch, 1);
+}
+
+int uart_send_data(USART_TypeDef *uart, uint8_t *buf, uint16_t len)
+{
+    uint16_t i = 0;
+    while(i < len)
     {
-        *ch = uart->DR & 0xff;
-        return 1;
+        USART_ClearFlag(uart, USART_FLAG_TC);
+        uart->DR = *buf++;
+        while(USART_GetFlagStatus(uart, USART_FLAG_TC) == RESET);
+        i++;
     }
-    return 0;
+    return len;
+}
+
+int uart_read_data(USART_TypeDef *uart, uint8_t *buf, uint16_t len)
+{
+    uint16_t i = 0;
+    while(i < len)
+    {
+        if(USART_GetFlagStatus(uart, USART_FLAG_RXNE) != RESET)
+        {
+            *buf++ = uart->DR & 0xff;
+            i++;
+        }
+        else
+            break;
+    }
+    return i;
 }
 

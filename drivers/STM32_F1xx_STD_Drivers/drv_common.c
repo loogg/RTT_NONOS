@@ -1,13 +1,6 @@
 #include "board.h"
 #include "drv_common.h"
 
-#ifdef RT_USING_CONSOLE
-#if !defined(BSP_USING_UART1) && !defined(BSP_USING_UART2) && !defined(BSP_USING_UART3) \
-    && !defined(BSP_USING_UART4) && !defined(BSP_USING_UART5) && !defined(BSP_USING_UART6) && !defined(BSP_USING_LPUART1)
-#error "Please define at least one BSP_USING_UARTx"
-#endif
-#endif
-
 #ifdef RT_USING_FINSH
 #include <finsh.h>
 static void reboot(uint8_t argc, char **argv)
@@ -18,7 +11,7 @@ FINSH_FUNCTION_EXPORT_ALIAS(reboot, __cmd_reboot, Reboot System);
 #endif /* RT_USING_FINSH */
 
 /* SysTick configuration */
-void rt_hw_systick_init(void)
+void rt_system_tick_init(void)
 {
     SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);
     SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
@@ -73,7 +66,7 @@ RT_WEAK void rt_hw_board_init()
     std_init();
 
     /* System clock initialization */
-    rt_hw_systick_init();
+    rt_system_tick_init();
 
     /* Heap initialization */
 #if defined(RT_USING_HEAP)

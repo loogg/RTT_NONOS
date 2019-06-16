@@ -100,7 +100,7 @@ static int finsh_getchar(void)
 
     RT_ASSERT(shell != RT_NULL);
     
-    uart_getc(USART1, &ch);
+    uart_read_data(USART1, (uint8_t *)&ch, 1);
     return (int)ch;
 #endif
 }

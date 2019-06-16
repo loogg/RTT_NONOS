@@ -14,7 +14,7 @@ static volatile rt_tick_t rt_tick = 0;
  * @deprecated since 1.1.0, this function does not need to be invoked
  * in the system initialization.
  */
-void rt_system_tick_init(void)
+RT_WEAK void rt_system_tick_init(void)
 {
 }
 

@@ -436,40 +436,6 @@ typedef siginfo_t rt_siginfo_t;
 #define RT_THREAD_CTRL_INFO             0x03                /**< Get thread information. */
 #define RT_THREAD_CTRL_BIND_CPU         0x04                /**< Set thread bind cpu. */
 
-#ifdef RT_USING_SMP
-
-#define RT_CPU_DETACHED                 RT_CPUS_NR          /**< The thread not running on cpu. */
-#define RT_CPU_MASK                     ((1 << RT_CPUS_NR) - 1) /**< All CPUs mask bit. */
-
-#ifndef RT_SCHEDULE_IPI
-#define RT_SCHEDULE_IPI                 0
-#endif
-
-/**
- * CPUs definitions
- * 
- */
-struct rt_cpu
-{
-    struct rt_thread *current_thread;
-
-    rt_uint16_t irq_nest;
-    rt_uint8_t  irq_switch_flag;
-
-    rt_uint8_t current_priority;
-    rt_list_t priority_table[RT_THREAD_PRIORITY_MAX];
-#if RT_THREAD_PRIORITY_MAX > 32
-    rt_uint32_t priority_group;
-    rt_uint8_t ready_table[32];
-#else
-    rt_uint32_t priority_group;
-#endif
-
-    rt_tick_t tick;
-};
-
-#endif
-
 /**
  * Thread structure
  */
@@ -494,6 +460,9 @@ typedef struct rt_thread *rt_thread_t;
 /**@}*/
 
 #define RT_WAITING_FOREVER              -1              /**< Block forever until get resource. */
+
+
+
 
 #ifdef RT_USING_SEMAPHORE
 /**

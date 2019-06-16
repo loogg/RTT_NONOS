@@ -11,8 +11,6 @@
 
 #include <rtthread.h>
 #include "board.h"
-#include <stdio.h>
-#include <stdbool.h>
 #include <finsh.h>
 #include <ymodem.h>
 

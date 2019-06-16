@@ -65,7 +65,7 @@ static enum rym_code _rym_read_code(
 {
     rt_tick_t timeout_tick;
     /* Fast path */
-    if (uart_getc(USART1, (char *)ctx->buf) == 1)
+    if (uart_read_data(USART1, ctx->buf, 1) == 1)
         return (enum rym_code)(*ctx->buf);
     
     timeout_tick = rt_tick_get() + timeout;
@@ -74,7 +74,7 @@ static enum rym_code _rym_read_code(
         rt_size_t rsz;
 
         /* Try to read one */
-        rsz = uart_getc(USART1, (char *)ctx->buf);
+        rsz = uart_read_data(USART1, ctx->buf, 1);
         if (rsz == 1)
             return (enum rym_code)(*ctx->buf);
     } while ((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
@@ -94,7 +94,7 @@ static rt_size_t _rym_read_data(
     timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
     do
     {
-        rt_size_t readlen = uart_getc(USART1, (char *)buf+total_len);
+        rt_size_t readlen = uart_read_data(USART1, buf+total_len, len - total_len);
         if(readlen)
             timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
         total_len += readlen;
@@ -107,7 +107,7 @@ static rt_size_t _rym_read_data(
 
 static rt_size_t _rym_putchar(struct rym_ctx *ctx, rt_uint8_t code)
 {
-    uart_putc(USART1, code);
+    uart_send_data(USART1, &code, sizeof(code));
     return 1;
 }
 
