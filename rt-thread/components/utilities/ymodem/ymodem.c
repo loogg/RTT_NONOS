@@ -12,6 +12,8 @@
 #include <rthw.h>
 #include "ymodem.h"
 
+static uint32_t _ymode_uart;
+
 static const rt_uint16_t ccitt_table[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
     0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
@@ -65,7 +67,7 @@ static enum rym_code _rym_read_code(
 {
     rt_tick_t timeout_tick;
     /* Fast path */
-    if (uart_read_data(USART1, ctx->buf, 1) == 1)
+    if (uart_read_data(_ymode_uart, ctx->buf, 1) == 1)
         return (enum rym_code)(*ctx->buf);
     
     timeout_tick = rt_tick_get() + timeout;
@@ -74,7 +76,7 @@ static enum rym_code _rym_read_code(
         rt_size_t rsz;
 
         /* Try to read one */
-        rsz = uart_read_data(USART1, ctx->buf, 1);
+        rsz = uart_read_data(_ymode_uart, ctx->buf, 1);
         if (rsz == 1)
             return (enum rym_code)(*ctx->buf);
     } while ((rt_tick_get() - timeout_tick) >= RT_TICK_MAX / 2);
@@ -94,7 +96,7 @@ static rt_size_t _rym_read_data(
     timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
     do
     {
-        rt_size_t readlen = uart_read_data(USART1, buf+total_len, len - total_len);
+        rt_size_t readlen = uart_read_data(_ymode_uart, buf+total_len, len - total_len);
         if(readlen)
             timeout_tick = rt_tick_get() + RYM_WAIT_CHR_TICK;
         total_len += readlen;
@@ -107,7 +109,7 @@ static rt_size_t _rym_read_data(
 
 static rt_size_t _rym_putchar(struct rym_ctx *ctx, rt_uint8_t code)
 {
-    uart_send_data(USART1, &code, sizeof(code));
+    uart_send_data(_ymode_uart, &code, sizeof(code));
     return 1;
 }
 
@@ -361,6 +363,7 @@ static rt_err_t _rym_do_recv(
 }
 
 rt_err_t rym_recv_on_device(
+		uint32_t uart,
         struct rym_ctx *ctx,
         rym_callback on_begin,
         rym_callback on_data,
@@ -375,6 +378,7 @@ rt_err_t rym_recv_on_device(
 
     RT_ASSERT(_rym_the_ctx == 0);
     _rym_the_ctx = ctx;
+	_ymode_uart = uart;
 
     ctx->on_begin = on_begin;
     ctx->on_data  = on_data;

@@ -22,6 +22,7 @@ struct finsh_shell _shell;
 struct finsh_shell *shell;
 static char *finsh_prompt_custom = RT_NULL;
 
+static uint32_t _shell_uart;
 
 #if defined(RT_USING_DFS)
 #include <dfs_posix.h>
@@ -100,7 +101,7 @@ static int finsh_getchar(void)
 
     RT_ASSERT(shell != RT_NULL);
     
-    uart_read_data(USART1, (uint8_t *)&ch, 1);
+    uart_read_data(_shell_uart, (uint8_t *)&ch, 1);
     return (int)ch;
 #endif
 }
@@ -719,6 +720,7 @@ int finsh_system_init(void)
     finsh_init(&shell->parser);
 #endif
 
+	_shell_uart = rt_console_get_uart();
 #ifndef RT_USING_POSIX
 
 #endif

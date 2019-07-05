@@ -1,0 +1,22 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+cwd = GetCurrentDir()
+
+# add the general drivers.
+src = Split("""
+drv_usart.c
+""")
+
+src += ['drv_common.c']
+
+path =  [cwd]
+path += [cwd + '/config']
+
+if GetDepend('BSP_USING_ON_CHIP_FLASH'):
+    src += ['drv_flash.c']
+
+group = DefineGroup('Drivers', src, depend = [''], CPPPATH = path)
+
+Return('group')

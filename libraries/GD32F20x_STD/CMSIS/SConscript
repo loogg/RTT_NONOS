@@ -1,0 +1,19 @@
+import rtconfig
+from building import *
+
+# get current directory
+cwd = GetCurrentDir()
+
+# The set of source files associated with this SConscript file.
+
+src = [cwd + '/GD/GD32F20x/Source/system_gd32f20x.c']
+
+path = [
+    cwd + '/GD/GD32F20x/Include',
+    cwd,]
+    
+
+
+group = DefineGroup('GD32_Lib', src, depend = [''], CPPPATH = path)
+
+Return('group')

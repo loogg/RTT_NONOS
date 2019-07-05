@@ -1,0 +1,19 @@
+import rtconfig
+Import('RTT_ROOT')
+from building import *
+
+# get current directory
+cwd = GetCurrentDir()
+
+src = []
+src += Glob('GD32F20x_standard_peripheral/Source/*.c')
+
+path = [cwd + '/CMSIS', 
+    cwd + '/CMSIS/GD/GD32F20x/Include',
+    cwd + '/GD32F20x_standard_peripheral/Include']
+
+CPPDEFINES = ['USE_STDPERIPH_DRIVER']
+
+group = DefineGroup('GD32_Lib', src, depend = [''], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+
+Return('group')

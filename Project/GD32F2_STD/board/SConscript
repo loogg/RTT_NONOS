@@ -1,0 +1,35 @@
+import os
+import rtconfig
+from building import *
+
+Import('SDK_LIB')
+
+cwd = GetCurrentDir()
+
+# add general drivers
+src = Split('''
+board.c
+config/src/gd32f2xx_std_msp.c
+config/src/gd32f20x_it.c
+config/src/system_gd32f20x.c
+''')
+
+if GetDepend(['PKG_USING_EASYFLASH']):
+    src += Glob('ports/ef_fal_port.c')
+    
+if GetDepend(['BSP_USING_SPI_FLASH']):
+    src += Glob('ports/spi_flash_init.c')
+
+path =  [cwd]
+path += [cwd + '/config/inc']
+path += [cwd + '/ports']
+
+startup_path_prefix = SDK_LIB
+
+if rtconfig.CROSS_TOOL == 'keil':
+    src += [startup_path_prefix + '/GD32F20x_STD/CMSIS/GD/GD32F20x/Source/ARM/startup_gd32f20x_cl.s']
+
+
+CPPDEFINES = ['GD32F20X_CL']
+group = DefineGroup('Drivers', src, depend = [''], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+Return('group')

@@ -35,6 +35,9 @@
 
 /**@{*/
 
+#ifdef RT_USING_CONSOLE
+static uint32_t _console_uart;
+#endif
 
 /**
  * This function will set the content of memory to specified value
@@ -457,10 +460,9 @@ char *strdup(const char *s) __attribute__((alias("rt_strdup")));
 void rt_show_version(void)
 {
     rt_kprintf("\n \\ | /\n");
-    rt_kprintf("- RT -     Thread Operating System\n");
+    rt_kprintf("- SFERE -   Bootloader\n");
     rt_kprintf(" / | \\     %d.%d.%d build %s\n",
                RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__);
-    rt_kprintf(" 2006 - 2019 Copyright by rt-thread team\n");
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1015,6 +1017,16 @@ rt_int32_t rt_sprintf(char *buf, const char *format, ...)
 RTM_EXPORT(rt_sprintf);
 
 #ifdef RT_USING_CONSOLE
+
+uint32_t rt_console_get_uart(void)
+{
+    return _console_uart;
+}
+
+void rt_console_set_device(uint32_t uart)
+{
+	_console_uart = uart;
+}
 
 RT_WEAK void rt_hw_console_output(const char *str)
 {

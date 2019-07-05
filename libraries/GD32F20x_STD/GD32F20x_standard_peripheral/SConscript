@@ -1,0 +1,19 @@
+import rtconfig
+from building import *
+
+# get current directory
+cwd = GetCurrentDir()
+
+# The set of source files associated with this SConscript file.
+
+src = Glob('Source/*.c')
+
+
+path = [cwd + '/Include',]
+    
+
+CPPDEFINES = ['USE_STDPERIPH_DRIVER']
+
+group = DefineGroup('GD32_Lib', src, depend = [''], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+
+Return('group')
