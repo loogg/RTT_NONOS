@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\..\rt-thread\include;applications;.;board;board\config\inc;board\ports;..\..\drivers\STM32_F1xx_STD_Drivers;..\..\drivers\STM32_F1xx_STD_Drivers\config;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\libcpu\arm\cortex-m3;..\..\rt-thread\components\finsh;..\..\rt-thread\components\utilities\ymodem;..\..\libraries\STM32F1xx_STD\CMSIS\CM3\CoreSupport;..\..\libraries\STM32F1xx_STD\STM32F10x_StdPeriph_Driver\inc;..\..\libraries\STM32F1xx_STD\CMSIS\CM3\DeviceSupport\ST\STM32F10x</IncludePath>
+              <IncludePath>.;..\..\rt-thread\include;applications;.;board;board\config\inc;board\ports;..\..\drivers\STM32_F1xx_STD_Drivers;..\..\drivers\STM32_F1xx_STD_Drivers\config;func;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\libcpu\arm\cortex-m3;..\..\rt-thread\components\finsh;..\..\rt-thread\components\utilities\ymodem;..\..\libraries\STM32F1xx_STD\CMSIS\CM3\CoreSupport;..\..\libraries\STM32F1xx_STD\STM32F10x_StdPeriph_Driver\inc;..\..\libraries\STM32F1xx_STD\CMSIS\CM3\DeviceSupport\ST\STM32F10x</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -471,6 +471,26 @@
               <FileName>drv_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\drivers\STM32_F1xx_STD_Drivers\drv_flash.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>func</GroupName>
+          <Files>
+            <File>
+              <FileName>jump_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>func\jump_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>func\mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>func\util.c</FilePath>
             </File>
           </Files>
         </Group>

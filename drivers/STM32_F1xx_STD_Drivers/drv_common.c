@@ -49,12 +49,12 @@ void rt_hw_us_delay(rt_uint32_t us)
 #ifdef RT_USING_CONSOLE
 void rt_hw_console_output(const char *str)
 {
-    while(*str)
-    {
-        if(*str == '\n')
-          uart_putc(USART1, '\r');  
-        uart_putc(USART1, *str++);
-    }
+	while(*str)
+	{
+		if(*str == '\n')
+			uart_putc(rt_console_get_uart(), '\r');
+		uart_putc(rt_console_get_uart(), *str++);
+	}
 }
 #endif
 
@@ -73,8 +73,10 @@ RT_WEAK void rt_hw_board_init()
     rt_system_heap_init((void *)HEAP_BEGIN, (void *)HEAP_END);
 #endif
 
+    uart_pre_init();
 #ifdef RT_USING_CONSOLE
-    uart_init(USART1, 115200, USART_WordLength_8b, USART_StopBits_1, USART_Parity_No);
+    uart_init((uint32_t)USART1, 115200, USART_WordLength_8b, USART_StopBits_1, USART_Parity_No);
+    rt_console_set_device((uint32_t)USART1);
 #endif
     
 

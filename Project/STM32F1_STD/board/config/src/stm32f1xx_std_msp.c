@@ -6,6 +6,34 @@ void std_init(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
     GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
+    
+#if defined(RCC_APB2ENR_IOPAEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+#endif
+    
+#if defined(RCC_APB2ENR_IOPBEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+#endif
+    
+#if defined(RCC_APB2ENR_IOPCEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+#endif
+    
+#if defined(RCC_APB2ENR_IOPDEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+#endif
+
+#if defined(RCC_APB2ENR_IOPEEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE, ENABLE);
+#endif
+
+#if defined(RCC_APB2ENR_IOPFEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOF, ENABLE);
+#endif
+
+#if defined(RCC_APB2ENR_IOPGEN)
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOG, ENABLE);
+#endif
 }
 
 void uart_msp_init(USART_TypeDef *uart)

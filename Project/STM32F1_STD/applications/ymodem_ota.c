@@ -133,7 +133,7 @@ int ymodem_ota(uint8_t argc, char **argv)
         rt_kprintf("Warning: Ymodem has started! This operator will not recovery.\n");
         rt_kprintf("Please select the ota firmware file and use Ymodem to send.\n");
 
-        if (!rym_recv_on_device(&rctx, 
+        if (!rym_recv_on_device(rt_console_get_uart(), &rctx, 
                                 ymodem_on_begin, ymodem_on_data, NULL, RT_TICK_PER_SECOND))
         {
             rt_tick_delay(5);

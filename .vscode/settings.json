@@ -3,6 +3,7 @@
         "drv_usart.h": "c",
         "drv_flash.h": "c",
         "stm32f1xx_std_msp.h": "c",
-        "gd32f2xx_std_msp.h": "c"
+        "gd32f2xx_std_msp.h": "c",
+        "drv_config.h": "c"
     }
 }
