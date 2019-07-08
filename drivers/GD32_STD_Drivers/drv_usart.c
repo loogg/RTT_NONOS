@@ -126,7 +126,6 @@ void uart_init(uint32_t uart, uint32_t UsartBaudRate, uint16_t UsartWordLength,
     uart_msp_init(uart);
 	uart_control_pin_init(uart);
     usart_disable(uart);
-    usart_deinit(uart);
     usart_baudrate_set(uart, UsartBaudRate);
     usart_word_length_set(uart, UsartWordLength);
     usart_stop_bit_set(uart, UsartStopBits);

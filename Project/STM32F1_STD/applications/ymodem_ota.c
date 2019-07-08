@@ -13,6 +13,7 @@
 #include "board.h"
 #include <finsh.h>
 #include <ymodem.h>
+#include "util.h"
 
 #define DBG_ENABLE
 #define DBG_SECTION_NAME               "ymodem"
@@ -30,32 +31,6 @@ static uint32_t addr;
 static char *recv_addr = RT_NULL;
 
 struct rym_ctx rctx = {0};
-
-static int htoi(char s[])  
-{  
-    int i;  
-    int n = 0;  
-    if (s[0] == '0' && (s[1]=='x' || s[1]=='X'))  
-    {  
-        i = 2;  
-    }  
-    else  
-    {  
-        i = 0;  
-    }  
-    for (; (s[i] >= '0' && s[i] <= '9') || (s[i] >= 'a' && s[i] <= 'z') || (s[i] >='A' && s[i] <= 'Z');++i)  
-    {  
-        if (tolower(s[i]) > '9')  
-        {  
-            n = 16 * n + (10 + tolower(s[i]) - 'a');  
-        }  
-        else  
-        {  
-            n = 16 * n + (tolower(s[i]) - '0');  
-        }  
-    }  
-    return n;  
-}  
 
 static enum rym_code ymodem_on_begin(struct rym_ctx *ctx, rt_uint8_t *buf, rt_size_t len)
 {
@@ -111,7 +86,7 @@ int ymodem_ota(uint8_t argc, char **argv)
     else
     {
         const char *operator = argv[1];
-        if (!strcmp(operator, "-p")) {
+        if (!rt_strcmp(operator, "-p")) {
             if (argc < 3) {
                 rt_kprintf("Usage: ymodem_ota -p <address>.\n");
                 return -RT_ERROR;
@@ -133,6 +108,7 @@ int ymodem_ota(uint8_t argc, char **argv)
         rt_kprintf("Warning: Ymodem has started! This operator will not recovery.\n");
         rt_kprintf("Please select the ota firmware file and use Ymodem to send.\n");
 
+        rt_memset(&rctx, 0, sizeof(struct rym_ctx));
         if (!rym_recv_on_device(rt_console_get_uart(), &rctx, 
                                 ymodem_on_begin, ymodem_on_data, NULL, RT_TICK_PER_SECOND))
         {
